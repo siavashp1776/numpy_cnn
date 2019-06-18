@@ -1,0 +1,1 @@
+Now, making CNN with Depth of 2 (first two layers of Karpathy CNN)
