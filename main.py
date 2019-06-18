@@ -25,7 +25,7 @@ for var,i in zip(vars,list(range(np.size(vars)))):
     e_g2.update({i:np.zeros_like(var.val)})
     e_x2.update({i:np.zeros_like(var.val)})
 
-p = np.float(0.99)
+p = np.float(0.94)
 e = np.float(1e-6)
 
 pp = pprint.PrettyPrinter(indent=4)
