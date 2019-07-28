@@ -27,5 +27,7 @@ Loss curve did not change much. average remained around 2.3
 The only way to know if something works is if the loss curve goes down after 1000 examples
 
 
-190718:
+190727:
+
+Configured with Github for availability + version control
 
