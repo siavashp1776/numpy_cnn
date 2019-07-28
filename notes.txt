@@ -1,0 +1,31 @@
+This file was used to run on the Gcloud server on Tuesday, June 18, 2019
+
+This uses Float64 computation, since float16 was not observed to be much faster
+This makes the update in backprop.py whereby the convbias gradient is computed correctly.
+It should read:     bias.grad += np.sum(output.grad,(0,1))
+
+Running on my local machine, it seems to produce reliable losses,
+and gradients for all variables seem normal
+
+In addition, messing the Adagrad update equations to make delta x -1000 times what it originall ways
+messes up the learning, and causes loss to go crazy
+
+The program did not have substantial reduction in loss over 1000 iterations
+
+--
+
+190620:
+
+I found that using the AdaDelta update, the mean and the stdev of the gradients plateaus
+When I changed to the SGD update, the problem disappeared.
+
+main(7) running with learning rate annealing alpha/(1+iter) and alpha of 0.001.
+    Mean and stdev of vars doesn't change much, even though gradients are changing
+main(10) running with no learning rate annealing, and alpha of 0.002. Gradients vanished in all conv parameters (cfilt, cbias, etc).
+Loss curve did not change much. average remained around 2.3
+
+The only way to know if something works is if the loss curve goes down after 1000 examples
+
+
+190718:
+

@@ -16,10 +16,9 @@ def select_and_run_batch(len,batch_size,vars):
 
     return [vars, carr, larr] ### stochastic with the last elem in batch
 
-def weight_update(vars,alpha,momentum):
+def weight_update(vars,alpha):
     for var in vars:
         var.val -= alpha* var.grad
-    vars = c.reinitgrads(vars)
     return vars
 
 # weight_update(vars,alpha)
@@ -27,11 +26,9 @@ def weight_update(vars,alpha,momentum):
 def adaDeltaUpdate(vars,p,epsilon,e_g2,e_x2):
     for var,i in zip(vars,list(range(np.size(vars)))):
         e_g2[i] = p*e_g2[i]+(1-p)*np.power(var.grad,2)
-        rms_gt =  np.sqrt(e_g2[i]+epsilon)
+        rms_gt = np.sqrt(e_g2[i]+epsilon)
         rms_delta_x = np.sqrt(e_x2[i]+epsilon)
         delta_x = -rms_delta_x*var.grad/rms_gt
         e_x2[i] = p*e_x2[i]+(1-p)*np.power(delta_x,2)
         var.val+=delta_x
     return [vars,e_g2,e_x2]
-
-

@@ -20,32 +20,38 @@ def initialize_vars():
     cbias1.grad = np.zeros_like(cbias1.val)
 
     cfilt2 = var()
-    cfilt2.val = np.random.rand(5, 5, 16, 20)*np.sqrt(2/(32*32*16)) #X input, Y input, Z channels in (16), N filters out
+    cfilt2.val = np.random.rand(5, 5, 16, 20)*np.sqrt(2/(20*20*16)) #X input, Y input, Z channels in (16), N filters out
     cfilt2.grad = np.zeros_like(cfilt2.val)
 
     cbias2 = var()
-    cbias2.val = 1e-5+np.random.rand(20)*np.sqrt(2/(32*32*16)) ## filters
+    cbias2.val = 1e-5+np.random.rand(20)*np.sqrt(2/(20*20*16)) ## filters
     cbias2.grad = np.zeros_like(cbias2.val)
 
+    cfilt3 = var()
+    cfilt3.val =  np.random.rand(5,5,20,20)*np.sqrt(2/(12*12*20))
+    cfilt3.grad = np.zeros_like(cfilt3.val)
+
+    cbias3 = var()
+    cbias3.val = np.random.rand(20)*np.sqrt(2/(12*12*20))
+    cbias3.grad = np.zeros_like(cbias3.val)
+
     FCweights = var()
-    FCweights.val = np.random.rand(8, 8, 20, 10)*np.sqrt(2/(32*32*20)) ## x, y, n filters, scores
+    FCweights.val = np.random.rand(4, 4, 20, 10)*np.sqrt(2/(4*4*20)) ## x, y, n filters, scores
     FCweights.grad = np.zeros_like(FCweights.val)
 
     FCbias = var()
-    FCbias.val = 1e-5+np.random.rand(10)*np.sqrt(2/(32*32*20)) ## scores
+    FCbias.val = 1e-5+np.random.rand(10)*np.sqrt(2/(4*4*20)) ## scores
     FCbias.grad = np.zeros_like(FCbias.val)
 
-    vars = [cfilt1, cbias1, cfilt2, cbias2, FCweights, FCbias]
+    vars = [cfilt1, cbias1, cfilt2, cbias2, cfilt3, cbias3, FCweights, FCbias]
 
     return vars
-
-###
 
 
 def run_CNN(CIFAR_img,label,variables):
     true = np.zeros(10)
     true[label] = 1
-    (cfilt1, cbias1, cfilt2, cbias2, FCweights, FCbias) = variables
+    [cfilt1, cbias1, cfilt2, cbias2, cfilt3, cbias3, FCweights, FCbias] = variables
 
     class var:
         val = []
@@ -83,7 +89,11 @@ def run_CNN(CIFAR_img,label,variables):
     maxpooled2 = f.maxpool(relu2,d)
     # print('maxpooled2 mean,', np.mean(maxpooled2.val))
     # print('maxpooled2 std', np.std(maxpooled2.val))
-    scores = f.fullyconnected(maxpooled2, FCweights, FCbias, (10))
+    pimg3 = f.pad_image(maxpooled2,pad)
+    conv3 = f.convolve(pimg3,cfilt3,cbias3,stride)
+    relu3 = f.relu(conv3)
+    maxpooled3 = f.maxpool(relu3,d)
+    scores = f.fullyconnected(maxpooled3, FCweights, FCbias, (10))
     # print(scores.val)  ## scores
 
     ## THEN SOFTMAX LOSS
@@ -105,17 +115,26 @@ def run_CNN(CIFAR_img,label,variables):
 
     scores = b.gscores(scores, softmax, true)
 
-    FCweights = b.gFCweight(FCweights, maxpooled2, scores)
+    FCweights = b.gFCweight(FCweights, maxpooled3, scores)
     FCbias = b.gFCbias(FCbias, scores)
-    maxpooled2 = b.gFCinput(maxpooled2, FCweights, scores)
+    maxpooled3 = b.gFCinput(maxpooled3, FCweights, scores)
+
+    relu3 = b.gmaxpool(relu3,d,maxpooled3)
+    conv3 = b.grelu(conv3,relu3)
+
+    cfilt3 = b.gconvfilter(cfilt3,pimg3,conv3,stride)
+    cbias3 = b.gconvbias(cbias3,conv3)
+    pimg3 = b.gconvinput(pimg3,cfilt3,conv3,stride)
+
+    maxpooled2 = b.gpad(maxpooled2,pimg3,pad)
 
     relu2 = b.gmaxpool(relu2,d,maxpooled2)
-
     conv2 = b.grelu(conv2,relu2)
+
     cfilt2 = b.gconvfilter(cfilt2,pimg2,conv2,stride)
     cbias2 = b.gconvbias(cbias2,conv2)
-
     pimg2 = b.gconvinput(pimg2,cfilt2,conv2,stride)
+
     maxpooled1 = b.gpad(maxpooled1,pimg2,pad)
 
     relu1 = b.gmaxpool(relu1, d, maxpooled1)
@@ -125,10 +144,9 @@ def run_CNN(CIFAR_img,label,variables):
     cfilt1 = b.gconvfilter(cfilt1, pimg, conv1, stride)
     pimg = b.gconvinput(pimg, cfilt1, conv1, stride)
 
-    vars = [cfilt1, cbias1, cfilt2, cbias2, FCweights, FCbias]
+    vars = [cfilt1, cbias1, cfilt2, cbias2, cfilt3, cbias3, FCweights, FCbias]
 
     correct = (np.argmax(scores) == label)
-
     return [vars,correct,loss]
 
 def reinitgrads(vars):

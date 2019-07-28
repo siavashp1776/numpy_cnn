@@ -1,30 +1,9 @@
 import numpy as np
-# import matplotlib.pyplot as plt
-# import openCIFAR
 
 
 class var:
     val = []
     grad = []
-
-#
-# a = openCIFAR.plot_CIFAR(3)
-#
-# # YEEHAW VARIABLE INITIALIZATION
-# input = var()
-# input.val = a
-# input.grad = np.zeros_like(input.val)
-#
-# filter = var()
-# filter.val = np.random.rand(5, 5, 3)
-# filter.grad = np.zeros_like(filter.val)
-#
-# bias = var()
-# bias.val = -25 * np.random.rand()
-# bias.grad = 0
-#
-# pad = 2
-# stride = 1
 
 def pad_image(input, pad):
     """
@@ -59,17 +38,6 @@ def convolve(input, filter, bias, stride):
     res.grad = np.zeros_like(res.val)
     return res
 
-#
-# #
-# convolved = convolve(input, filter, bias, pad, stride)
-# fig = plt.figure(figsize=(3, 3))
-# ax = fig.add_subplot(111)
-# ax.imshow(convolved.val, interpolation='bicubic')
-# ax.set_title('Convolved image')
-# plt.show()
-
-
-## relu
 
 def relu(input):
     """
@@ -81,17 +49,6 @@ def relu(input):
     ans.grad = np.zeros_like(ans.val)
     return ans
 
-
-# RELUd = relu(convolved)
-#
-# fig = plt.figure(figsize=(3, 3))
-# ax = fig.add_subplot(111)
-# ax.imshow(RELUd.val, interpolation='bicubic')
-# ax.set_title('Relu')
-# plt.show()
-
-
-## maxpool
 
 def maxpool(input, d):
     """
@@ -110,16 +67,7 @@ def maxpool(input, d):
     result.grad = np.zeros_like(result.val)
     return result
 
-#
-# maxpooled = maxpool(RELUd, 2)
-# fig = plt.figure(figsize=(3, 3))
-# ax = fig.add_subplot(111)
-# ax.imshow(maxpooled.val, interpolation='bicubic')
-# ax.set_title('Maxpool')
-# plt.show()
 
-
-## fully connected
 def fullyconnected(input, w, b, outputsize):
     scores = var()
     scores.val = np.zeros(outputsize)  # each entry of the output
@@ -133,27 +81,6 @@ def fullyconnected(input, w, b, outputsize):
     scores.grad = np.zeros_like(scores.val)
     return scores
 
-# (xr, yr) = np.shape(maxpooled.val)
-# b = var()
-# b.val = np.random.rand(10)
-# FCweights = var()
-# FCweights.val = np.random.rand(xr, yr, np.size(b.val)) / 100
-# score = fullyconnected(maxpooled, FCweights, b, (1, 10))
-# print(score.val)
-#
-# # ## softmax
-# nj = score.val / np.sum(score.val)
-# soft2 = np.exp(nj) / np.sum(np.exp(nj))
-# soft = np.exp(score.val) / np.sum(np.exp(score.val))
-#
-# corr = np.zeros((1, 10))
-# corr[0, 4] = 1
 
 def CLLoss(soft, corr):
     return np.sum(-corr * np.log(soft))
-
-# print(soft)
-# print(soft2)
-# print(CLLoss(soft, corr))
-# print(CLLoss(soft2, corr))
-# print('yey')
