@@ -9,3 +9,4 @@ print(res)
 print(2)
 
 print('new lines added to CNN.py')
+print('whoa')
