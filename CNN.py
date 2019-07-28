@@ -7,3 +7,5 @@ res = F.conv2d(inputs, filters, padding=1)
 
 print(res)
 print(2)
+
+print('new lines added to CNN.py')
